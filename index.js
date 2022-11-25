@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -32,7 +32,7 @@ async function run() {
 
     app.get('/homeCategory', async (req, res) => {
       const query = {};
-      const cursor = categoriesDatabase.find(query).sort({time: -1}).limit(3);
+      const cursor = categoriesDatabase.find(query).sort({ time: -1 }).limit(3);
       const result = await cursor.toArray();
       res.send(result);
     })
@@ -46,8 +46,15 @@ async function run() {
 
     app.get('/products', async (req, res) => {
       const query = {};
-      const cursor = productsDatabase.find(query).sort({time: -1});
+      const cursor = productsDatabase.find(query).sort({ time: -1 });
       const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.get('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsDatabase.findOne(query);
       res.send(result);
     })
 
@@ -64,12 +71,12 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     })
-    
+
     app.get('/categories/:name', async (req, res) => {
       const name = req.params.name;
       console.log(name);
-      const query = {category : name};
-      const cursor = productsDatabase .find(query);
+      const query = { category: name };
+      const cursor = productsDatabase.find(query);
       const result = await cursor.toArray();
       res.send(result);
     })
@@ -80,7 +87,7 @@ async function run() {
       user.id = result.insertedId;
       res.send(result);
     })
-  
+
 
   }
   finally {
