@@ -21,6 +21,7 @@ async function run() {
 
     const productsDatabase = client.db('handMeDown').collection('products');
     const categoriesDatabase = client.db('handMeDown').collection('category');
+    const usersDatabase = client.db('handMeDown').collection('users');
 
     app.get('/homeProducts', async (req, res) => {
       const query = {};
@@ -63,6 +64,23 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     })
+    
+    app.get('/categories/:name', async (req, res) => {
+      const name = req.params.name;
+      console.log(name);
+      const query = {category : name};
+      const cursor = productsDatabase .find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const result = await usersDatabase.insertOne(user);
+      user.id = result.insertedId;
+      res.send(result);
+    })
+  
 
   }
   finally {
