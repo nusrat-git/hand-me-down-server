@@ -22,6 +22,7 @@ async function run() {
     const productsDatabase = client.db('handMeDown').collection('products');
     const categoriesDatabase = client.db('handMeDown').collection('category');
     const usersDatabase = client.db('handMeDown').collection('users');
+    const bookedDatabase = client.db('handMeDown').collection('booked');
 
     app.get('/homeProducts', async (req, res) => {
       const query = {};
@@ -85,6 +86,20 @@ async function run() {
       const user = req.body;
       const result = await usersDatabase.insertOne(user);
       user.id = result.insertedId;
+      res.send(result);
+    })
+
+    app.post('/booked', async (req, res) => {
+      const product = req.body;
+      const result = await bookedDatabase.insertOne(product);
+      product.id = result.insertedId;
+      res.send(result);
+    })
+
+    app.get('/booked', async (req, res) => {
+      const query = {};
+      const cursor = bookedDatabase.find(query);
+      const result = await cursor.toArray();
       res.send(result);
     })
 
