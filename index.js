@@ -56,7 +56,18 @@ async function run() {
       next();
     }
 
-    app.post('/products', async (req, res) => {
+    const verifySeller = async (req, res, next) => {
+      console.log('inside verify selller', req.decoded.email);
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await usersDatabase.findOne(query);
+      if (user.role !== 'Seller') {
+        return res.status(403).send('forbidden access');
+      }
+      next();
+    }
+
+    app.post('/products', verifyJWT, async (req, res) => {
       const product = req.body;
       const result = await productsDatabase.insertOne(product);
       product.id = result.insertedId;
@@ -70,21 +81,21 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/products/:id', async (req, res) => {
+    app.get('/products/:id', verifyJWT, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await productsDatabase.findOne(query);
       res.send(result);
     })
 
-    app.delete('/products/:id', async (req, res) => {
+    app.delete('/products/:id', verifyJWT, verifySeller, async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await productsDatabase.deleteOne(query);
       res.send(result);
     })
 
-    app.get('/products', verifyJWT, async (req, res) => {
+    app.get('/products', verifyJWT, verifySeller, async (req, res) => {
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
 
@@ -97,7 +108,7 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/advertised', async (req, res) => {
+    app.post('/advertised', verifyJWT, verifySeller, async (req, res) => {
       const advertise = req.body;
       const result = await advertisedDatabase.insertOne(advertise);
       advertise.id = result.insertedId;
@@ -124,7 +135,7 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/categories/:name', async (req, res) => {
+    app.get('/categories/:name', verifyJWT, async (req, res) => {
       const name = req.params.name;
       console.log(name);
       const query = { category: name };
@@ -146,11 +157,10 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/users/seller/:email',verifyJWT, async (req, res) => {
+    app.get('/users/seller/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const user = await usersDatabase.findOne(query);
-      console.log({ isSeller: user?.role === 'Seller' });
       res.send({ isSeller: user?.role === 'Seller' });
     })
 
@@ -158,7 +168,6 @@ async function run() {
       const email = req.params.email;
       const query = { email: email };
       const user = await usersDatabase.findOne(query);
-      console.log({ isAdmin: user?.role === 'Admin' });
       res.send({ isAdmin: user?.role === 'Admin' });
     })
 
@@ -188,19 +197,19 @@ async function run() {
       res.status(403).send({ accessToken: '' });
     })
 
-    app.get('/buyers', async (req, res) => {
+    app.get('/buyers', verifyJWT, verifyAdmin, async (req, res) => {
       const query = { role: 'Buyer' };
       const result = await usersDatabase.find(query).toArray();
       res.send(result);
     })
 
-    app.get('/sellers', async (req, res) => {
+    app.get('/sellers', verifyJWT, verifyAdmin, async (req, res) => {
       const query = { role: 'Seller' };
       const result = await usersDatabase.find(query).toArray();
       res.send(result);
     })
 
-    app.post('/booked', async (req, res) => {
+    app.post('/booked', verifyJWT, async (req, res) => {
       const product = req.body;
       const result = await bookedDatabase.insertOne(product);
       product.id = result.insertedId;
