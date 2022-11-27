@@ -45,20 +45,6 @@ async function run() {
     const bookedDatabase = client.db('handMeDown').collection('booked');
     const advertisedDatabase = client.db('handMeDown').collection('advertised');
 
-    // app.get('/homeProducts', async (req, res) => {
-    //   const query = {};
-    //   const cursor = productsDatabase.find(query).sort({ time: -1 }).limit(3);
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // })
-
-    // app.get('/homeCategory', async (req, res) => {
-    //   const query = {};
-    //   const cursor = categoriesDatabase.find(query).sort({ time: -1 }).limit(3);
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // })
-
     app.post('/products', async (req, res) => {
       const product = req.body;
       const result = await productsDatabase.insertOne(product);
@@ -195,6 +181,18 @@ async function run() {
       }
       console.log(user);
       res.status(403).send({ accessToken: '' });
+    })
+
+    app.get('/buyers', async (req, res) => {
+      const query = { role: 'Buyer' };
+      const result = await usersDatabase.find(query).toArray();
+      res.send(result);
+    })
+    
+    app.get('/sellers', async (req, res) => {
+      const query = { role: 'Seller' };
+      const result = await usersDatabase.find(query).toArray();
+      res.send(result);
     })
 
     app.post('/booked', async (req, res) => {
