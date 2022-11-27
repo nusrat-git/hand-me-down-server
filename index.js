@@ -51,12 +51,12 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/homeCategory', async (req, res) => {
-      const query = {};
-      const cursor = categoriesDatabase.find(query).sort({ time: -1 }).limit(3);
-      const result = await cursor.toArray();
-      res.send(result);
-    })
+    // app.get('/homeCategory', async (req, res) => {
+    //   const query = {};
+    //   const cursor = categoriesDatabase.find(query).sort({ time: -1 }).limit(3);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // })
 
     app.post('/products', async (req, res) => {
       const product = req.body;
@@ -76,6 +76,19 @@ async function run() {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
       const result = await productsDatabase.findOne(query);
+      res.send(result);
+    })
+
+    app.get('/products', verifyJWT, async (req, res) => {
+      const email = req.query.email;
+      const decodedEmail = req.decoded.email;
+
+      if (email !== decodedEmail) {
+        return res.status(403).send({ message: 'forbidden access' });
+      }
+
+      const query = { seller_email: email };
+      const result = await productsDatabase.find(query).toArray();
       res.send(result);
     })
 
@@ -169,14 +182,6 @@ async function run() {
       product.id = result.insertedId;
       res.send(result);
     })
-
-    // app.get('/booked', verifyJWT, async (req, res) => {
-    //   const query = {};
-    //   const decodedEmail = req.decoded.email;
-    //   const cursor = bookedDatabase.find(query);
-    //   const result = await cursor.toArray();
-    //   res.send(result);
-    // })
 
     app.get('/booked', verifyJWT, async (req, res) => {
       const email = req.query.email;
