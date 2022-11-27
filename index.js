@@ -157,6 +157,13 @@ async function run() {
       res.send(result);
     })
 
+    app.delete('/users/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersDatabase.deleteOne(query);
+      res.send(result);
+    })
+
     app.get('/users/seller/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
@@ -203,9 +210,24 @@ async function run() {
       res.send(result);
     })
 
+    app.delete('/buyers/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersDatabase.deleteOne(query);
+      res.send(result);
+    })
+
+
     app.get('/sellers', verifyJWT, verifyAdmin, async (req, res) => {
       const query = { role: 'Seller' };
       const result = await usersDatabase.find(query).toArray();
+      res.send(result);
+    })
+
+    app.delete('/sellers/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await usersDatabase.deleteOne(query);
       res.send(result);
     })
 
