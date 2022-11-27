@@ -45,6 +45,17 @@ async function run() {
     const bookedDatabase = client.db('handMeDown').collection('booked');
     const advertisedDatabase = client.db('handMeDown').collection('advertised');
 
+    const verifyAdmin = async (req, res, next) => {
+      console.log('inside verify admin', req.decoded.email);
+      const decodedEmail = req.decoded.email;
+      const query = { email: decodedEmail };
+      const user = await usersDatabase.findOne(query);
+      if (user.role !== 'Admin') {
+        return res.status(403).send('forbidden access');
+      }
+      next();
+    }
+
     app.post('/products', async (req, res) => {
       const product = req.body;
       const result = await productsDatabase.insertOne(product);
@@ -129,13 +140,13 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/users', async (req, res) => {
+    app.get('/users', verifyJWT, verifyAdmin, async (req, res) => {
       const query = {};
       const result = await usersDatabase.find(query).toArray();
       res.send(result);
     })
 
-    app.get('/users/seller/:email', async (req, res) => {
+    app.get('/users/seller/:email',verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const user = await usersDatabase.findOne(query);
@@ -143,7 +154,7 @@ async function run() {
       res.send({ isSeller: user?.role === 'Seller' });
     })
 
-    app.get('/users/admin/:email', async (req, res) => {
+    app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const user = await usersDatabase.findOne(query);
@@ -152,13 +163,7 @@ async function run() {
     })
 
 
-    app.put('/users/admin/:id', verifyJWT, async (req, res) => {
-      const decodedEmail = req.decoded.email;
-      const query = { email: decodedEmail };
-      const user = await usersDatabase.findOne(query);
-      if (user.role !== 'Admin') {
-        return res.status(403).send('forbidden access');
-      }
+    app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const options = { upsert: true };
@@ -188,7 +193,7 @@ async function run() {
       const result = await usersDatabase.find(query).toArray();
       res.send(result);
     })
-    
+
     app.get('/sellers', async (req, res) => {
       const query = { role: 'Seller' };
       const result = await usersDatabase.find(query).toArray();
