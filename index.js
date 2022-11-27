@@ -43,13 +43,14 @@ async function run() {
     const categoriesDatabase = client.db('handMeDown').collection('category');
     const usersDatabase = client.db('handMeDown').collection('users');
     const bookedDatabase = client.db('handMeDown').collection('booked');
+    const advertisedDatabase = client.db('handMeDown').collection('advertised');
 
-    app.get('/homeProducts', async (req, res) => {
-      const query = {};
-      const cursor = productsDatabase.find(query).sort({ time: -1 }).limit(3);
-      const result = await cursor.toArray();
-      res.send(result);
-    })
+    // app.get('/homeProducts', async (req, res) => {
+    //   const query = {};
+    //   const cursor = productsDatabase.find(query).sort({ time: -1 }).limit(3);
+    //   const result = await cursor.toArray();
+    //   res.send(result);
+    // })
 
     // app.get('/homeCategory', async (req, res) => {
     //   const query = {};
@@ -79,6 +80,13 @@ async function run() {
       res.send(result);
     })
 
+    app.delete('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsDatabase.deleteOne(query);
+      res.send(result);
+    })
+
     app.get('/products', verifyJWT, async (req, res) => {
       const email = req.query.email;
       const decodedEmail = req.decoded.email;
@@ -89,6 +97,19 @@ async function run() {
 
       const query = { seller_email: email };
       const result = await productsDatabase.find(query).toArray();
+      res.send(result);
+    })
+
+    app.post('/advertised', async (req, res) => {
+      const advertise = req.body;
+      const result = await advertisedDatabase.insertOne(advertise);
+      advertise.id = result.insertedId;
+      res.send(result);
+    })
+
+    app.get('/advertised', async (req, res) => {
+      const query = {};
+      const result = await advertisedDatabase.find(query).toArray();
       res.send(result);
     })
 
