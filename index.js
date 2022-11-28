@@ -44,6 +44,7 @@ async function run() {
     const usersDatabase = client.db('handMeDown').collection('users');
     const bookedDatabase = client.db('handMeDown').collection('booked');
     const advertisedDatabase = client.db('handMeDown').collection('advertised');
+    const reportedDatabase = client.db('handMeDown').collection('reported');
 
     const verifyAdmin = async (req, res, next) => {
       console.log('inside verify admin', req.decoded.email);
@@ -250,6 +251,28 @@ async function run() {
       const result = await bookedDatabase.find(query).toArray();
       res.send(result);
     })
+
+    app.post('/reported', verifyJWT, async (req, res) => {
+      const product = req.body;
+      const result = await reportedDatabase.insertOne(product);
+      product.id = result.insertedId;
+      res.send(result);
+    })
+
+    app.get('/reported', verifyJWT, verifyAdmin, async (req, res) => {
+      const query = {};
+      const result = await reportedDatabase.find(query).toArray();
+      res.send(result);
+    })
+
+    app.delete('/reported/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const result = await reportedDatabase.deleteOne(query);
+      res.send(result);
+    })
+
+
 
   }
   finally {
