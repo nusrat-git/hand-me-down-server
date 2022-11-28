@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const e = require('express');
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -193,6 +193,19 @@ async function run() {
       res.send(result);
     })
 
+    app.put('/sellers/:id', verifyJWT, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          verify: 'Verified'
+        }
+      }
+      const result = await usersDatabase.updateOne(filter, updatedDoc, options);
+      res.send(result);
+    })
+
     app.get('/jwt', async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
@@ -252,6 +265,13 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/booked/:id', verifyJWT, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await bookedDatabase.findOne(query);
+      res.send(result);
+    })
+
     app.post('/reported', verifyJWT, async (req, res) => {
       const product = req.body;
       const result = await reportedDatabase.insertOne(product);
@@ -272,6 +292,22 @@ async function run() {
       res.send(result);
     })
 
+    // app.post('/create-payment-intent', async (req, res) => {
+    //   const booking = req.body;
+    //   const price = booking.price
+    //   console.log(price);
+    //   const amount = price * 100;
+    //   const paymentIntent = await stripe.paymentIntents.create({
+    //     currency: 'usd',
+    //     amount: amount,
+    //     "payment_method_type": [
+    //       "card"
+    //     ]
+    //   });
+    //   res.send({
+    //     clientSecret: paymentIntent.client_secret,
+    //   });
+    // })
 
 
   }
