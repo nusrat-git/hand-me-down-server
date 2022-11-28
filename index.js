@@ -186,7 +186,7 @@ async function run() {
       console.log({ isVerified: user?.role === 'Seller' && user?.verify === 'Verified' });
       res.send({ isVerified: user?.role === 'Seller' && user?.verify === 'Verified' });
     })
-
+    
     app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
