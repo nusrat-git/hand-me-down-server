@@ -58,7 +58,6 @@ async function run() {
     }
 
     const verifySeller = async (req, res, next) => {
-      console.log('inside verify selller', req.decoded.email);
       const decodedEmail = req.decoded.email;
       const query = { email: decodedEmail };
       const user = await usersDatabase.findOne(query);
@@ -96,16 +95,17 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/products', verifyJWT, verifySeller, async (req, res) => {
-      const email = req.query.email;
-      const decodedEmail = req.decoded.email;
-
-      if (email !== decodedEmail) {
-        return res.status(403).send({ message: 'forbidden access' });
-      }
-
+    app.get('/myproducts/:email', verifyJWT, verifySeller, async (req, res) => {
+      const email = req.params.email;
       const query = { seller_email: email };
       const result = await productsDatabase.find(query).toArray();
+      res.send(result);
+    })
+
+    app.get('/advertised/:id', verifyJWT, verifySeller, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await productsDatabase.findOne(query);
       res.send(result);
     })
 
@@ -122,7 +122,7 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/categories', async (req, res) => {
+    app.post('/categories', verifyJWT, verifyAdmin, async (req, res) => {
       const category = req.body;
       const result = await categoriesDatabase.insertOne(category);
       category.id = result.insertedId;
