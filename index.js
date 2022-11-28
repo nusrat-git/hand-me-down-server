@@ -116,6 +116,13 @@ async function run() {
       res.send(result);
     })
 
+    app.delete('/advertised/:id', verifyJWT, verifySeller, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: id };
+      const result = await advertisedDatabase.deleteOne(query);
+      res.send(result);
+    })
+
     app.get('/advertised', async (req, res) => {
       const query = {};
       const result = await advertisedDatabase.find(query).toArray();
