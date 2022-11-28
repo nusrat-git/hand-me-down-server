@@ -172,6 +172,14 @@ async function run() {
       res.send({ isSeller: user?.role === 'Seller' });
     })
 
+    app.get('/users/seller/verified/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersDatabase.findOne(query);
+      console.log({ isVerified: user?.role === 'Seller' && user?.verify === 'Verified' });
+      res.send({ isVerified: user?.role === 'Seller' && user?.verify === 'Verified' });
+    })
+
     app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
